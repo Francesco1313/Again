@@ -178,6 +178,34 @@
       color: #9ca3af;
     }
 
+    /* Warning banner */
+    .warning-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      padding: 8px 8px 8px 4px;
+      border: 1px solid rgba(239, 108, 0, 0.3);
+      border-radius: 4px;
+      background: linear-gradient(90deg, rgba(239,108,0,0.07) 0%, rgba(239,108,0,0.07) 100%),
+                  linear-gradient(90deg, #fff 0%, #fff 100%);
+      margin-top: -8px;
+    }
+    .warning-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #EF6C00;
+    }
+    .warning-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      line-height: 1.4;
+    }
+
     /* Demo trigger */
     .open-btn {
       padding: 12px 24px;
@@ -248,12 +276,14 @@
           title: "Delay",
           description: "Pause the automation before the next step.",
           svg: `<svg viewBox="0 0 24 24" fill="none" width="28" height="28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 12"/></svg>`,
+          warning: "Delays cannot be placed immediately next to each other.",
         },
         {
           id: "branch",
           title: "Branch",
           description: "Split the flow based on conditions.",
           svg: `<svg viewBox="0 0 24 24" fill="none" width="28" height="28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 16V8a6 6 0 0 0 6 6h4"/><line x1="18" y1="8" x2="18" y2="16"/></svg>`,
+          warning: "Branches can only be added at the end of the flow.",
         },
       ],
     };
@@ -304,16 +334,25 @@
         return;
       }
 
+      const warningIcon = `<svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>`;
+
       content.innerHTML = blocks
         .map(
           (b) => `
-          <button class="block-item" data-id="${b.id}">
-            <div class="block-icon">${b.svg}</div>
-            <div class="block-text">
-              <span class="block-title">${b.title}</span>
-              <span class="block-desc">${b.description}</span>
-            </div>
-          </button>`
+          <div class="block-group">
+            <button class="block-item" data-id="${b.id}">
+              <div class="block-icon">${b.svg}</div>
+              <div class="block-text">
+                <span class="block-title">${b.title}</span>
+                <span class="block-desc">${b.description}</span>
+              </div>
+            </button>
+            ${b.warning ? `
+            <div class="warning-banner">
+              <span class="warning-icon">${warningIcon}</span>
+              <span class="warning-text">${b.warning}</span>
+            </div>` : ""}
+          </div>`
         )
         .join("");
     }
