@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Building Block Modal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .overlay.hidden { display: none; }
+
+    /* Modal */
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 680px;
+      max-width: 95vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px;
+    }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #111;
+      white-space: nowrap;
+      margin-right: 4px;
+    }
+    .search-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-icon {
+      position: absolute;
+      right: 10px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 7px 34px 7px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: #374151;
+      background: #f9fafb;
+      outline: none;
+    }
+    .search-input:focus { border-color: #9ca3af; }
+    .close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .close-btn:hover { background: #f3f4f6; }
+
+    .divider { height: 1px; background: #f0f0f0; }
+
+    /* Body */
+    .modal-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 400px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 190px;
+      flex-shrink: 0;
+      padding: 12px 0;
+      border-right: 1px solid #f0f0f0;
+      display: flex;
+      flex-direction: column;
+    }
+    .cat-btn {
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .cat-btn:hover { background: #f9fafb; }
+    .cat-btn.active {
+      background: #f3f4f6;
+      font-weight: 700;
+      color: #111;
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Block item */
+    .block-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+      font-family: inherit;
+    }
+    .block-icon {
+      width: 52px;
+      height: 52px;
+      background: #d1d5db;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .block-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-top: 4px;
+    }
+    .block-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #9ca3af;
+    }
+    .block-desc {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    /* Demo trigger */
+    .open-btn {
+      padding: 12px 24px;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .open-btn:hover { background: #333; }
+  </style>
+</head>
+<body>
+
+  <button class="open-btn" id="openBtn">Open Modal</button>
+
+  <div class="overlay hidden" id="overlay">
+    <div class="modal" id="modal">
+      <!-- Header -->
+      <div class="modal-header">
+        <span class="modal-title">Add building block</span>
+        <div class="search-wrapper">
+          <span class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input class="search-input" type="text" placeholder="Search for actions or aut..." id="searchInput" />
+        </div>
+        <button class="close-btn" id="closeBtn" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar"></nav>
+        <!-- Content -->
+        <div class="content" id="content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const categories = [
+      "Automation Controls",
+      "User Management",
+      "Tags",
+      "Learning",
+      "Messaging",
+      "Integrations",
+    ];
+
+    const blocksByCategory = {
+      "Automation Controls": [
+        {
+          id: "delay",
+          title: "Delay",
+          description: "Pause the automation before the next step.",
+          svg: `<svg viewBox="0 0 24 24" fill="none" width="28" height="28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 12"/></svg>`,
+        },
+        {
+          id: "branch",
+          title: "Branch",
+          description: "Split the flow based on conditions.",
+          svg: `<svg viewBox="0 0 24 24" fill="none" width="28" height="28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 16V8a6 6 0 0 0 6 6h4"/><line x1="18" y1="8" x2="18" y2="16"/></svg>`,
+        },
+      ],
+    };
+
+    let activeCategory = "Automation Controls";
+
+    const overlay = document.getElementById("overlay");
+    const openBtn = document.getElementById("openBtn");
+    const closeBtn = document.getElementById("closeBtn");
+    const sidebar = document.getElementById("sidebar");
+    const content = document.getElementById("content");
+    const searchInput = document.getElementById("searchInput");
+
+    function renderSidebar() {
+      sidebar.innerHTML = categories
+        .map(
+          (cat) =>
+            `<button class="cat-btn${cat === activeCategory ? " active" : ""}" data-cat="${cat}">${cat}</button>`
+        )
+        .join("");
+
+      sidebar.querySelectorAll(".cat-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeCategory = btn.dataset.cat;
+          searchInput.value = "";
+          renderSidebar();
+          renderBlocks();
+        });
+      });
+    }
+
+    function renderBlocks(query = "") {
+      let blocks;
+      if (query.trim()) {
+        blocks = Object.values(blocksByCategory)
+          .flat()
+          .filter(
+            (b) =>
+              b.title.toLowerCase().includes(query.toLowerCase()) ||
+              b.description.toLowerCase().includes(query.toLowerCase())
+          );
+      } else {
+        blocks = blocksByCategory[activeCategory] ?? [];
+      }
+
+      if (blocks.length === 0) {
+        content.innerHTML = `<p style="color:#9ca3af;font-size:14px;">No blocks found.</p>`;
+        return;
+      }
+
+      content.innerHTML = blocks
+        .map(
+          (b) => `
+          <button class="block-item" data-id="${b.id}">
+            <div class="block-icon">${b.svg}</div>
+            <div class="block-text">
+              <span class="block-title">${b.title}</span>
+              <span class="block-desc">${b.description}</span>
+            </div>
+          </button>`
+        )
+        .join("");
+    }
+
+    openBtn.addEventListener("click", () => {
+      overlay.classList.remove("hidden");
+      renderSidebar();
+      renderBlocks();
+    });
+
+    closeBtn.addEventListener("click", () => overlay.classList.add("hidden"));
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) overlay.classList.add("hidden");
+    });
+
+    searchInput.addEventListener("input", (e) => renderBlocks(e.target.value));
+  </script>
+</body>
+</html>
